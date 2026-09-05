@@ -36,7 +36,10 @@ set_target_properties(tti-launcher PROPERTIES
 
 # Embed the launcher icon into the binary.
 if(WIN32)
-    target_sources(tti-launcher PRIVATE src/launcher.rc)
+    set(LAUNCHER_ICON "${CMAKE_SOURCE_DIR}/assets/icon/launcher.ico")
+    configure_file(src/launcher.rc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/launcher.rc @ONLY)
+    target_sources(tti-launcher PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/launcher.rc)
 elseif(APPLE)
     set_target_properties(tti-launcher PROPERTIES
         MACOSX_BUNDLE_ICON launcher.icns

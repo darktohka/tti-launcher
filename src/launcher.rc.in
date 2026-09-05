@@ -1,0 +1,6 @@
+// Windows application icon resource. Generated from launcher.rc.in by CMake
+// so @LAUNCHER_ICON@ expands to an absolute path to the .ico. Embedded by the
+// RC compiler (rc.exe / windres) so the built .exe shows the Toontown
+// Infinite launcher icon in Explorer and the taskbar. IDI_ICON1 is the
+// conventional application icon.
+IDI_ICON1               ICON    DISCARDABLE    "@LAUNCHER_ICON@"
