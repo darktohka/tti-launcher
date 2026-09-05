@@ -20,6 +20,17 @@ const QUrl kDownloadBase =
 
 const QString kGameExecutable = QStringLiteral("infinite.exe");
 
+// Error codes used by the launcher.
+constexpr int kErrConnect = 900; // could not reach the account server
+constexpr int kErrInvalid = 901; // invalid response from the account server
+constexpr int kErrWrite = 902;   // could not open file for write
+constexpr int kErrRead = 903;    // could not open file for read
+constexpr int kErrExtract = 904; // could not extract archive
+
+// Network inactivity timeout (ms). Aborts a request that stops transferring
+// data for this long (e.g. a stalled connection).
+constexpr int kNetworkTimeoutMs = 30000;
+
 // HTTP User-Agent template: "TTI-Launcher/%1 (%2/%3)" -> (version,
 // distribution, platform)
 inline QString userAgent() {

@@ -18,17 +18,6 @@
 
 namespace {
 
-// Error codes used by the launcher.
-constexpr int kErrConnect = 900; // could not reach the account server
-constexpr int kErrInvalid = 901; // invalid response from the account server
-constexpr int kErrWrite = 902;   // could not open file for write
-constexpr int kErrRead = 903;    // could not open file for read
-constexpr int kErrExtract = 904; // could not extract archive
-
-// Network inactivity timeout (ms). Aborts a request that stops transferring
-// data for this long (e.g. a stalled connection).
-constexpr int kNetworkTimeoutMs = 30000;
-
 QByteArray percentEncode(const QString &s) {
   return QUrl::toPercentEncoding(s);
 }
@@ -97,11 +86,20 @@ bool fileUpToDate(const QString &path, const FileEntry &entry) {
   return QString::fromLatin1(hash.result().toHex()) == entry.hash;
 }
 
-bool extractBz2(const QString &archivePath, const QString &outputPath) {
+bool extractBz2(const QString &archivePath, const QString &outputPath,
+                bool *readFailed = nullptr) {
   FILE *in = fopen(archivePath.toLocal8Bit().constData(), "rb");
 
   if (!in) {
+    if (readFailed) {
+      *readFailed = true;
+    }
+
     return false;
+  }
+
+  if (readFailed) {
+    *readFailed = false;
   }
 
   FILE *out = fopen(outputPath.toLocal8Bit().constData(), "wb");
@@ -193,7 +191,7 @@ void Updater::login(const QString &username, const QString &password,
   body += "&distribution=" + percentEncode(distribution);
 
   QNetworkRequest request(launcher::kLoginEndpoint);
-  request.setTransferTimeout(kNetworkTimeoutMs);
+  request.setTransferTimeout(launcher::kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::ContentTypeHeader,
                     QStringLiteral("application/x-www-form-urlencoded"));
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
@@ -211,7 +209,7 @@ void Updater::onLoginReplyFinished() {
 
   if (reply->error() != QNetworkReply::NoError) {
     response.success = false;
-    response.code = kErrConnect;
+    response.code = launcher::kErrConnect;
     response.detail = launcher::kCouldNotConnect;
     emit loginFinished(response);
     reply->deleteLater();
@@ -223,7 +221,7 @@ void Updater::onLoginReplyFinished() {
 
   if (!doc.isObject()) {
     response.success = false;
-    response.code = kErrInvalid;
+    response.code = launcher::kErrInvalid;
     response.detail = launcher::kInvalidResponse;
     emit loginFinished(response);
     return;
@@ -236,7 +234,7 @@ void Updater::onLoginReplyFinished() {
     response.cookie = obj.value(QStringLiteral("cookie")).toString();
     response.port = obj.value(QStringLiteral("port")).toInt(0);
   } else {
-    response.code = obj.value(QStringLiteral("code")).toInt(kErrInvalid);
+    response.code = obj.value(QStringLiteral("code")).toInt(launcher::kErrInvalid);
     response.detail = obj.value(QStringLiteral("detail")).toString();
   }
 
@@ -258,7 +256,7 @@ void Updater::fetchManifest() {
                               launcher::kManifestName);
 
   QNetworkRequest request(url);
-  request.setTransferTimeout(kNetworkTimeoutMs);
+  request.setTransferTimeout(launcher::kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
 
   m_manifestReply = m_nam->get(request);
@@ -373,7 +371,7 @@ void Updater::startFileDownload(const FileEntry &entry, int index, int total) {
   const QUrl url = channelUrl(downloadBase, launcher::kDistribution, relative);
 
   QNetworkRequest request(url);
-  request.setTransferTimeout(kNetworkTimeoutMs);
+  request.setTransferTimeout(launcher::kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
 
   const QString finalPath = QDir(installDir()).filePath(entry.path);
@@ -383,7 +381,7 @@ void Updater::startFileDownload(const FileEntry &entry, int index, int total) {
   delete m_downloadFile;
   m_downloadFile = new QFile(archivePath, this);
   if (!m_downloadFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-    reportError(kErrWrite, launcher::kCouldNotOpenWrite.arg(finalPath));
+    reportError(launcher::kErrWrite, launcher::kCouldNotOpenWrite.arg(finalPath));
     return;
   }
 
@@ -419,7 +417,7 @@ void Updater::onDownloadFinished() {
   m_downloadFile->close();
 
   if (!networkOk) {
-    reportError(kErrConnect, launcher::kCouldNotConnect);
+    reportError(launcher::kErrConnect, launcher::kCouldNotConnect);
     return;
   }
 
@@ -427,8 +425,15 @@ void Updater::onDownloadFinished() {
   const QString finalPath = QDir(installDir()).filePath(entry.path);
   const QString archivePath = finalPath + QStringLiteral(".bz2");
 
-  if (!extractBz2(archivePath, finalPath)) {
-    reportError(kErrExtract, launcher::kCouldNotExtract.arg(finalPath));
+  bool readFailed = false;
+  if (!extractBz2(archivePath, finalPath, &readFailed)) {
+    if (readFailed) {
+      reportError(launcher::kErrRead,
+                  launcher::kCouldNotOpenRead.arg(archivePath));
+    } else {
+      reportError(launcher::kErrExtract,
+                  launcher::kCouldNotExtract.arg(finalPath));
+    }
     return;
   }
 

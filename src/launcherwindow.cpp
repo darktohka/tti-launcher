@@ -22,9 +22,6 @@
 #include <QVBoxLayout>
 
 namespace {
-constexpr int kErrConnect = 900;
-constexpr int kErrInvalid = 901;
-
 QFont makeBoldFont(const char *family, int pointSize) {
   QFont font;
   font.setFamily(QString::fromLatin1(family));
