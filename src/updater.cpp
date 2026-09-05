@@ -25,6 +25,10 @@ constexpr int kErrWrite = 902;   // could not open file for write
 constexpr int kErrRead = 903;    // could not open file for read
 constexpr int kErrExtract = 904; // could not extract archive
 
+// Network inactivity timeout (ms). Aborts a request that stops transferring
+// data for this long (e.g. a stalled connection).
+constexpr int kNetworkTimeoutMs = 30000;
+
 QByteArray percentEncode(const QString &s) {
   return QUrl::toPercentEncoding(s);
 }
@@ -189,6 +193,7 @@ void Updater::login(const QString &username, const QString &password,
   body += "&distribution=" + percentEncode(distribution);
 
   QNetworkRequest request(launcher::kLoginEndpoint);
+  request.setTransferTimeout(kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::ContentTypeHeader,
                     QStringLiteral("application/x-www-form-urlencoded"));
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
@@ -253,6 +258,7 @@ void Updater::fetchManifest() {
                               launcher::kManifestName);
 
   QNetworkRequest request(url);
+  request.setTransferTimeout(kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
 
   m_manifestReply = m_nam->get(request);
@@ -367,6 +373,7 @@ void Updater::startFileDownload(const FileEntry &entry, int index, int total) {
   const QUrl url = channelUrl(downloadBase, launcher::kDistribution, relative);
 
   QNetworkRequest request(url);
+  request.setTransferTimeout(kNetworkTimeoutMs);
   request.setHeader(QNetworkRequest::UserAgentHeader, launcher::userAgent());
 
   const QString finalPath = QDir(installDir()).filePath(entry.path);
