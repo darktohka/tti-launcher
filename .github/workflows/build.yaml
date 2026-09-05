@@ -50,7 +50,7 @@ jobs:
       - name: Install bzip2 (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: "$VCPKG_INSTALLATION_ROOT/vcpkg" install bzip2:x64-windows
+        run: $VCPKG_INSTALLATION_ROOT/vcpkg install bzip2:x64-windows
 
       - name: Configure
         shell: bash
