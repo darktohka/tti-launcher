@@ -43,11 +43,29 @@ jobs:
           arch: ${{ matrix.qt_arch }}
           modules: ''
 
+      - name: Install bzip2 (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libbz2-dev
+
+      - name: Install bzip2 (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: "$VCPKG_INSTALLATION_ROOT/vcpkg" install bzip2:x64-windows
+
       - name: Configure
+        shell: bash
         run: |
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
+          cmake_args=(
+            -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_INSTALL_PREFIX=install
+          )
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cmake_args+=(
+              -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+              -DVCPKG_TARGET_TRIPLET=x64-windows
+            )
+          fi
+          cmake -S . -B build "${cmake_args[@]}"
 
       - name: Build
         run: cmake --build build --config Release --parallel
