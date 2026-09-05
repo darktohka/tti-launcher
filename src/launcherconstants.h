@@ -1,12 +1,27 @@
 #pragma once
 
+#include <QtGlobal>
 #include <QString>
 #include <QUrl>
+
+#if defined(Q_OS_WIN)
+#define LAUNCHER_PLATFORM "win32"
+#elif defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+#define LAUNCHER_PLATFORM "macos-x64"
+#elif defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM_64)
+#define LAUNCHER_PLATFORM "macos-arm64"
+#elif defined(Q_OS_LINUX) && defined(Q_PROCESSOR_X86_64)
+#define LAUNCHER_PLATFORM "linux-x64"
+#elif defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM_64)
+#define LAUNCHER_PLATFORM "linux-arm64"
+#else
+#define LAUNCHER_PLATFORM "win32"
+#endif
 
 namespace launcher {
 
 const QString kVersion = QStringLiteral("1.2.0");
-const QString kPlatform = QStringLiteral("win32");
+const QString kPlatform = QStringLiteral(LAUNCHER_PLATFORM);
 const QString kDistribution = QStringLiteral("live");
 
 const QString kManifestName = QStringLiteral("manifest.json");

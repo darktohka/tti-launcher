@@ -17,4 +17,5 @@ The executable is written to `build/tti-launcher`. The game files will be locate
 
 - The manifest hashes are MD5 hex strings
 - File updates are fetched as `<path>.bz2` and extracted in place.
-- The user-agent is `TTI-Launcher/1.2.0 (live/win32)`.
+- The user-agent is `TTI-Launcher/1.2.0 (live/<platform>)`, where `<platform>` is
+  selected at compile time: `win32`, `linux-x64`, `macos-x64`, or `macos-arm64`.
