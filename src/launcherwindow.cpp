@@ -24,8 +24,7 @@ constexpr int kErrInvalid = 901;
 LauncherWindow::LauncherWindow(QWidget *parent)
     : DraggableWindow(parent), m_nam(new QNetworkAccessManager(this)),
       m_updater(new Updater(m_nam, this)) {
-  setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint |
-                 Qt::Window);
+  setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
   setupUi();
 
   // Initial update check (fetch manifest, verify launcher version).
@@ -42,12 +41,11 @@ LauncherWindow::LauncherWindow(QWidget *parent)
   connect(m_updater, &Updater::statusChanged, this,
           &LauncherWindow::onStatusChanged);
 
-  connect(m_usernameEdit, &QLineEdit::textChanged, this,
-          &LauncherWindow::updatePlayEnabled);
-  connect(m_passwordEdit, &QLineEdit::textChanged, this,
-          &LauncherWindow::updatePlayEnabled);
+  connect(m_usernameEdit, &QLineEdit::returnPressed, this,
+          &LauncherWindow::on_line_edit_username_returnPressed);
+  connect(m_passwordEdit, &QLineEdit::returnPressed, this,
+          &LauncherWindow::on_line_edit_password_returnPressed);
 
-  updatePlayEnabled();
   m_updater->fetchManifest();
 }
 
@@ -63,9 +61,9 @@ void LauncherWindow::setupUi() {
   setFixedSize(800, 600);
 
   setStyleSheet(
-      QStringLiteral("QWidget#launcher_window {"
-                     "    background-image: url(:/JPEG/assets/BACKGROUND.jpg);"
-                     "    border-radius: 25px;"
+      QStringLiteral("QWidget#launcher_window {\n"
+                     "    background-image: url(:/JPEG/assets/BACKGROUND.jpg);\n"
+                     "    border-radius: 25px;\n"
                      "}"));
 
   m_closeButton = new QPushButton(this);
@@ -74,13 +72,19 @@ void LauncherWindow::setupUi() {
   m_closeButton->setFixedSize(35, 35);
   m_closeButton->setCursor(Qt::PointingHandCursor);
   m_closeButton->setStyleSheet(
-      QStringLiteral("QPushButton#push_button_close { border: none;"
-                     " background-image: url(:/JPEG/assets/CLOSE_NORMAL.jpg); "
-                     "background-repeat: none; }"
-                     "QPushButton#push_button_close:hover { background-image: "
-                     "url(:/JPEG/assets/CLOSE_ROLLOVER.jpg); }"
-                     "QPushButton#push_button_close:pressed { "
-                     "background-image: url(:/JPEG/assets/CLOSE_DOWN.jpg); }"));
+      QStringLiteral("QPushButton#push_button_close {\n"
+                     "    border: none;\n"
+                     "    background-image: url(:/JPEG/assets/CLOSE_NORMAL.jpg);\n"
+                     "    background-repeat: none;\n"
+                     "}\n"
+                     "\n"
+                     "QPushButton#push_button_close:hover {\n"
+                     "    background-image: url(:/JPEG/assets/CLOSE_ROLLOVER.jpg);\n"
+                     "}\n"
+                     "\n"
+                     "QPushButton#push_button_close:pressed {\n"
+                     "    background-image: url(:/JPEG/assets/CLOSE_DOWN.jpg);\n"
+                     "}"));
   connect(m_closeButton, &QPushButton::clicked, this,
           &LauncherWindow::on_push_button_close_clicked);
 
@@ -90,13 +94,19 @@ void LauncherWindow::setupUi() {
   m_minimizeButton->setFixedSize(35, 35);
   m_minimizeButton->setCursor(Qt::PointingHandCursor);
   m_minimizeButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_minimize { border: none;"
-      " background-image: url(:/JPEG/assets/MINIMIZE_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_minimize:hover { background-image: "
-      "url(:/JPEG/assets/MINIMIZE_ROLLOVER.jpg); }"
-      "QPushButton#push_button_minimize:pressed { background-image: "
-      "url(:/JPEG/assets/MINIMIZE_DOWN.jpg); }"));
+      "QPushButton#push_button_minimize {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/MINIMIZE_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_minimize:hover {\n"
+      "    background-image: url(:/JPEG/assets/MINIMIZE_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_minimize:pressed {\n"
+      "    background-image: url(:/JPEG/assets/MINIMIZE_DOWN.jpg);\n"
+      "}"));
   connect(m_minimizeButton, &QPushButton::clicked, this,
           &LauncherWindow::on_push_button_minimize_clicked);
 
@@ -105,8 +115,11 @@ void LauncherWindow::setupUi() {
   m_usernameEdit->setGeometry(144, 283, 168, 16);
   m_usernameEdit->setFixedSize(169, 17);
   m_usernameEdit->setStyleSheet(
-      QStringLiteral("QLineEdit#line_edit_username { border: none; background: "
-                     "none; background-color: rgb(255,255,255); }"));
+      QStringLiteral("QLineEdit#line_edit_username {\n"
+                     "    border: none;\n"
+                     "    background: none;\n"
+                     "    background-color: rgb(255, 255, 255);\n"
+                     "}"));
   m_usernameEdit->setPlaceholderText(QStringLiteral("Username"));
 
   m_passwordEdit = new QLineEdit(this);
@@ -115,8 +128,11 @@ void LauncherWindow::setupUi() {
   m_passwordEdit->setFixedSize(169, 17);
   m_passwordEdit->setEchoMode(QLineEdit::Password);
   m_passwordEdit->setStyleSheet(
-      QStringLiteral("QLineEdit#line_edit_password { border: none; background: "
-                     "none; background-color: rgb(255,255,255); }"));
+      QStringLiteral("QLineEdit#line_edit_password {\n"
+                     "    border: none;\n"
+                     "    background: none;\n"
+                     "    background-color: rgb(255, 255, 255);\n"
+                     "}"));
   m_passwordEdit->setPlaceholderText(QStringLiteral("Password"));
 
   m_reportBugButton = new QPushButton(this);
@@ -125,13 +141,23 @@ void LauncherWindow::setupUi() {
   m_reportBugButton->setFixedSize(120, 40);
   m_reportBugButton->setCursor(Qt::PointingHandCursor);
   m_reportBugButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_report_a_bug { border: none;"
-      " background-image: url(:/JPEG/assets/REPORT_A_BUG_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_report_a_bug:hover { background-image: "
-      "url(:/JPEG/assets/REPORT_A_BUG_ROLLOVER.jpg); }"
-      "QPushButton#push_button_report_a_bug:pressed { background-image: "
-      "url(:/JPEG/assets/REPORT_A_BUG_DOWN.jpg); }"));
+      "QPushButton#push_button_report_a_bug {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/REPORT_A_BUG_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_report_a_bug:hover {\n"
+      "    background-image: url(:/JPEG/assets/REPORT_A_BUG_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_report_a_bug:pressed {\n"
+      "    background-image: url(:/JPEG/assets/REPORT_A_BUG_DOWN.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_report_a_bug:pressed {\n"
+      "    background-image: url(:/JPEG/assets/REPORT_A_BUG_DISABLED.jpg);\n"
+      "}"));
   connect(m_reportBugButton, &QPushButton::clicked, this,
           &LauncherWindow::on_push_button_report_a_bug_clicked);
 
@@ -141,13 +167,23 @@ void LauncherWindow::setupUi() {
   m_homePageButton->setFixedSize(120, 40);
   m_homePageButton->setCursor(Qt::PointingHandCursor);
   m_homePageButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_home_page { border: none;"
-      " background-image: url(:/JPEG/assets/HOME_PAGE_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_home_page:hover { background-image: "
-      "url(:/JPEG/assets/HOME_PAGE_ROLLOVER.jpg); }"
-      "QPushButton#push_button_home_page:pressed { background-image: "
-      "url(:/JPEG/assets/HOME_PAGE_DOWN.jpg); }"));
+      "QPushButton#push_button_home_page {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/HOME_PAGE_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_home_page:hover {\n"
+      "    background-image: url(:/JPEG/assets/HOME_PAGE_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_home_page:pressed {\n"
+      "    background-image: url(:/JPEG/assets/HOME_PAGE_DOWN.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_home_page:disabled {\n"
+      "    background-image: url(:/JPEG/assets/HOME_PAGE_DISABLED.jpg);\n"
+      "}"));
   connect(m_homePageButton, &QPushButton::clicked, this,
           &LauncherWindow::on_push_button_home_page_clicked);
 
@@ -157,15 +193,23 @@ void LauncherWindow::setupUi() {
   m_playButton->setFixedSize(85, 82);
   m_playButton->setCursor(Qt::PointingHandCursor);
   m_playButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_play { border: none;"
-      " background-image: url(:/JPEG/assets/PLAY_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_play:hover { background-image: "
-      "url(:/JPEG/assets/PLAY_ROLLOVER.jpg); }"
-      "QPushButton#push_button_play:pressed { background-image: "
-      "url(:/JPEG/assets/PLAY_DOWN.jpg); }"
-      "QPushButton#push_button_play:disabled { background-image: "
-      "url(:/JPEG/assets/PLAY_DISABLED.jpg); }"));
+      "QPushButton#push_button_play {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/PLAY_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_play:hover {\n"
+      "    background-image: url(:/JPEG/assets/PLAY_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_play:pressed {\n"
+      "    background-image: url(:/JPEG/assets/PLAY_DOWN.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_play:disabled {\n"
+      "    background-image: url(:/JPEG/assets/PLAY_DISABLED.jpg);\n"
+      "}"));
   connect(m_playButton, &QPushButton::clicked, this,
           &LauncherWindow::on_push_button_play_clicked);
 
@@ -175,10 +219,17 @@ void LauncherWindow::setupUi() {
   m_progressBar->setMinimumSize(5, 5);
   m_progressBar->setMaximumSize(500, 500);
   m_progressBar->setStyleSheet(QStringLiteral(
-      "QProgressBar#progress_bar { border: none; background: none; "
-      "background-color: rgb(255,255,255); }"
-      "QProgressBar::chunk#progress_bar { border: none; border-radius: 2px; "
-      "background-color: rgb(255,140,0); }"));
+      "QProgressBar#progress_bar {\n"
+      "    border: none;\n"
+      "    background: none;\n"
+      "    background-color: rgb(255, 255, 255);\n"
+      "}\n"
+      "\n"
+      "QProgressBar::chunk#progress_bar {\n"
+      "    border: none;\n"
+      "    border-radius: 2px;\n"
+      "    background-color: rgb(255, 140, 0);\n"
+      "}"));
   m_progressBar->setValue(0);
   m_progressBar->setTextVisible(false);
 
@@ -188,7 +239,7 @@ void LauncherWindow::setupUi() {
   m_statusLabel->setMinimumSize(291, 12);
   m_statusLabel->setMaximumSize(291, 12);
   m_statusLabel->setStyleSheet(QStringLiteral(
-      "QLabel#label_status { border: none; background: none; }"));
+      "QLabel#label_status {\n    border: none;\n    background: none;\n}"));
 
   m_gameVersionLabel = new QLabel(this);
   m_gameVersionLabel->setObjectName(QStringLiteral("label_game_version"));
@@ -196,7 +247,7 @@ void LauncherWindow::setupUi() {
   m_gameVersionLabel->setMinimumSize(175, 20);
   m_gameVersionLabel->setMaximumSize(175, 20);
   m_gameVersionLabel->setStyleSheet(QStringLiteral(
-      "QLabel#label_game_version { border: none; background: none; }"));
+      "QLabel#label_game_version {\n    border: none;\n    background: none;\n}"));
   m_gameVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
   m_launcherVersionLabel = new QLabel(this);
@@ -206,7 +257,7 @@ void LauncherWindow::setupUi() {
   m_launcherVersionLabel->setMinimumSize(175, 20);
   m_launcherVersionLabel->setMaximumSize(175, 20);
   m_launcherVersionLabel->setStyleSheet(QStringLiteral(
-      "QLabel#label_launcher_version { border: none; background: none; }"));
+      "QLabel#label_launcher_version {\n    border: none;\n    background: none;\n}"));
   m_launcherVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
   m_contentPacksButton = new QPushButton(this);
@@ -216,15 +267,23 @@ void LauncherWindow::setupUi() {
   m_contentPacksButton->setFixedSize(120, 40);
   m_contentPacksButton->setCursor(Qt::PointingHandCursor);
   m_contentPacksButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_content_packs { border: none;"
-      " background-image: url(:/JPEG/assets/CONTENT_PACKS_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_content_packs:hover { background-image: "
-      "url(:/JPEG/assets/CONTENT_PACKS_ROLLOVER.jpg); }"
-      "QPushButton#push_button_content_packs:pressed { background-image: "
-      "url(:/JPEG/assets/CONTENT_PACKS_DOWN.jpg); }"));
-  connect(m_contentPacksButton, &QPushButton::clicked, this,
-          &LauncherWindow::on_push_button_content_packs_clicked);
+      "QPushButton#push_button_content_packs {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/CONTENT_PACKS_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_content_packs:hover {\n"
+      "    background-image: url(:/JPEG/assets/CONTENT_PACKS_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_content_packs:pressed {\n"
+      "    background-image: url(:/JPEG/assets/CONTENT_PACKS_DOWN.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_content_packs:disabled {\n"
+      "    background-image: url(:/JPEG/assets/CONTENT_PACKS_DISABLED.jpg);\n"
+"}"));
 
   m_optionsButton = new QPushButton(this);
   m_optionsButton->setObjectName(QStringLiteral("push_button_options"));
@@ -232,20 +291,27 @@ void LauncherWindow::setupUi() {
   m_optionsButton->setFixedSize(120, 40);
   m_optionsButton->setCursor(Qt::PointingHandCursor);
   m_optionsButton->setStyleSheet(QStringLiteral(
-      "QPushButton#push_button_options { border: none;"
-      " background-image: url(:/JPEG/assets/OPTIONS_NORMAL.jpg); "
-      "background-repeat: none; }"
-      "QPushButton#push_button_options:hover { background-image: "
-      "url(:/JPEG/assets/OPTIONS_ROLLOVER.jpg); }"
-      "QPushButton#push_button_options:pressed { background-image: "
-      "url(:/JPEG/assets/OPTIONS_DOWN.jpg); }"));
-  connect(m_optionsButton, &QPushButton::clicked, this,
-          &LauncherWindow::on_push_button_options_clicked);
+      "QPushButton#push_button_options {\n"
+      "    border: none;\n"
+      "    background-image: url(:/JPEG/assets/OPTIONS_NORMAL.jpg);\n"
+      "    background-repeat: none;\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_options:hover {\n"
+      "    background-image: url(:/JPEG/assets/OPTIONS_ROLLOVER.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_options:pressed {\n"
+      "    background-image: url(:/JPEG/assets/OPTIONS_DOWN.jpg);\n"
+      "}\n"
+      "\n"
+      "QPushButton#push_button_options:disabled {\n"
+      "    background-image: url(:/JPEG/assets/OPTIONS_DISABLED.jpg);\n"
+      "}"));
 
-  setWindowTitle(QStringLiteral("Toontown Infinite Launcher"));
-  m_launcherVersionLabel->setText(
-      QStringLiteral("Launcher v%1").arg(launcher::kVersion));
-  m_gameVersionLabel->setText(QStringLiteral("N/A"));
+  setWindowTitle(QStringLiteral("Toontown Infinite"));
+  m_launcherVersionLabel->setText(QStringLiteral(""));
+  m_gameVersionLabel->setText(QStringLiteral(""));
 }
 
 // ---------------------------------------------------------------------------
@@ -264,32 +330,38 @@ void LauncherWindow::on_push_button_report_a_bug_clicked() {
   QDesktopServices::openUrl(launcher::kLaunchpadUrl);
 }
 
-void LauncherWindow::on_push_button_content_packs_clicked() {
-  QDesktopServices::openUrl(launcher::kSiteUrl);
-}
-
-void LauncherWindow::on_push_button_options_clicked() {
-  QDesktopServices::openUrl(launcher::kSiteUrl);
-}
-
-void LauncherWindow::updatePlayEnabled() {
-  const bool enabled =
-      !m_usernameEdit->text().isEmpty() && !m_passwordEdit->text().isEmpty();
-  m_playButton->setEnabled(enabled);
-}
-
 void LauncherWindow::on_push_button_play_clicked() {
-  updatePlayEnabled();
-
-  if (!m_playButton->isEnabled()) {
+  if (!m_playButton->isEnabled())
     return;
-  }
+  if (m_usernameEdit->text().isEmpty() || m_passwordEdit->text().isEmpty())
+    return;
+
+  // Disable the login controls while credentials are being verified so the
+  // flow cannot be re-entered (matches the original launcher).
+  m_playButton->setEnabled(false);
+  m_usernameEdit->setEnabled(false);
+  m_passwordEdit->setEnabled(false);
 
   setStatus(launcher::kVerifyingCredentials);
+  m_updater->login(m_usernameEdit->text(), m_passwordEdit->text(),
+                   launcher::kDistribution);
+}
 
-  const QString username = m_usernameEdit->text();
-  const QString password = m_passwordEdit->text();
-  m_updater->login(username, password, launcher::kDistribution);
+void LauncherWindow::on_line_edit_username_returnPressed() {
+  if (m_playButton->isEnabled()) {
+    on_push_button_play_clicked();
+  } else if (!m_usernameEdit->text().isEmpty()) {
+    m_passwordEdit->setFocus();
+  }
+}
+
+void LauncherWindow::on_line_edit_password_returnPressed() {
+  if (m_playButton->isEnabled()) {
+    on_push_button_play_clicked();
+  } else if (!m_passwordEdit->text().isEmpty() &&
+             m_usernameEdit->text().isEmpty()) {
+    m_usernameEdit->setFocus();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -310,17 +382,22 @@ void LauncherWindow::onManifestFetched(bool ok) {
     return;
   }
 
-  m_gameVersionLabel->setText(
-      m_updater->gameVersion.isEmpty()
-          ? QStringLiteral("N/A")
-          : QStringLiteral("v%1").arg(m_updater->gameVersion));
+  m_launcherVersionLabel->setText(m_updater->launcherVersion.isEmpty()
+                                      ? QStringLiteral("N/A")
+                                      : m_updater->launcherVersion);
+  m_gameVersionLabel->setText(m_updater->gameVersion.isEmpty()
+                                  ? QStringLiteral("N/A")
+                                  : m_updater->gameVersion);
 }
 
 void LauncherWindow::onLoginFinished(const LoginResponse &response) {
   if (!response.success) {
     setStatus(QString::number(response.code) + QStringLiteral(": ") +
               response.detail);
-    updatePlayEnabled();
+    m_playButton->setEnabled(true);
+    m_usernameEdit->setEnabled(true);
+    m_passwordEdit->setEnabled(true);
+    m_usernameEdit->setFocus();
     return;
   }
 
@@ -333,15 +410,16 @@ void LauncherWindow::onLoginFinished(const LoginResponse &response) {
 void LauncherWindow::onUpdateFinished() { startGame(); }
 
 void LauncherWindow::onDownloadError(int error, const QString &errorString) {
-  Q_UNUSED(error)
-  setStatus(errorString);
-  updatePlayEnabled();
+  setStatus(QString::number(error) + QStringLiteral(": ") + errorString);
+  m_playButton->setEnabled(true);
+  m_usernameEdit->setEnabled(true);
+  m_passwordEdit->setEnabled(true);
 }
 
 void LauncherWindow::onDownloadProgress(qint64 bytesRead, qint64 bytesTotal,
                                         const QString &status) {
-  Q_UNUSED(bytesRead)
-  Q_UNUSED(bytesTotal)
+  m_progressBar->setRange(0, bytesTotal);
+  m_progressBar->setValue(bytesRead);
   setStatus(status);
 }
 

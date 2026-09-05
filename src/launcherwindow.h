@@ -25,11 +25,10 @@ private slots:
   void on_push_button_minimize_clicked();
   void on_push_button_home_page_clicked();
   void on_push_button_report_a_bug_clicked();
-  void on_push_button_content_packs_clicked();
-  void on_push_button_options_clicked();
   void on_push_button_play_clicked();
+  void on_line_edit_username_returnPressed();
+  void on_line_edit_password_returnPressed();
 
-  void updatePlayEnabled();
   void onManifestFetched(bool ok);
   void onLoginFinished(const struct LoginResponse &response);
   void onDownloadError(int error, const QString &errorString);
