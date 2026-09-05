@@ -10,6 +10,8 @@ class QPushButton;
 class QProgressBar;
 class QLabel;
 class QNetworkAccessManager;
+class QPaintEvent;
+class QPixmap;
 class Updater;
 
 // Main launcher window.
@@ -37,10 +39,15 @@ private slots:
   void onUpdateFinished();
   void onStatusChanged(const QString &status);
 
+protected:
+  void paintEvent(QPaintEvent *event) override;
+
 private:
   void setupUi();
   void startGame();
   void setStatus(const QString &status);
+
+  QPixmap m_background;
 
   QWidget *m_window = nullptr;
   QPushButton *m_closeButton = nullptr;

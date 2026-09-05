@@ -4,12 +4,17 @@
 
 #include <QApplication>
 #include <QDesktopServices>
+#include <QFont>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPalette>
+#include <QPixmap>
 #include <QProcess>
 #include <QProgressBar>
 #include <QPushButton>
@@ -19,6 +24,14 @@
 namespace {
 constexpr int kErrConnect = 900;
 constexpr int kErrInvalid = 901;
+
+QFont makeBoldFont(const char *family, int pointSize) {
+  QFont font;
+  font.setFamily(QString::fromLatin1(family));
+  font.setPointSize(pointSize);
+  font.setWeight(QFont::Bold);
+  return font;
+}
 } // namespace
 
 LauncherWindow::LauncherWindow(QWidget *parent)
@@ -46,6 +59,11 @@ LauncherWindow::LauncherWindow(QWidget *parent)
   connect(m_passwordEdit, &QLineEdit::returnPressed, this,
           &LauncherWindow::on_line_edit_password_returnPressed);
 
+  // The frameless window is drawn as a rounded rectangle on top of the
+  // background image, so the corners must be transparent.
+  setAttribute(Qt::WA_TranslucentBackground);
+  m_usernameEdit->setFocus(Qt::OtherFocusReason);
+
   m_updater->fetchManifest();
 }
 
@@ -60,11 +78,17 @@ void LauncherWindow::setupUi() {
   resize(800, 600);
   setFixedSize(800, 600);
 
-  setStyleSheet(
-      QStringLiteral("QWidget#launcher_window {\n"
-                     "    background-image: url(:/JPEG/assets/BACKGROUND.jpg);\n"
-                     "    border-radius: 25px;\n"
-                     "}"));
+  // The background is painted in paintEvent() with rounded corners; the
+  // window itself stays translucent so the corners are transparent.
+  m_background = QPixmap(QStringLiteral(":/JPEG/assets/BACKGROUND.jpg"));
+
+  setFont(makeBoldFont("Comic Sans MS", 10));
+
+  QPalette blackText = palette();
+  blackText.setColor(QPalette::WindowText, Qt::black);
+  blackText.setColor(QPalette::Text, Qt::black);
+  blackText.setColor(QPalette::ButtonText, Qt::black);
+  setPalette(blackText);
 
   m_closeButton = new QPushButton(this);
   m_closeButton->setObjectName(QStringLiteral("push_button_close"));
@@ -114,18 +138,24 @@ void LauncherWindow::setupUi() {
   m_usernameEdit->setObjectName(QStringLiteral("line_edit_username"));
   m_usernameEdit->setGeometry(144, 283, 168, 16);
   m_usernameEdit->setFixedSize(169, 17);
+  m_usernameEdit->setFont(makeBoldFont("Microsoft Sans Serif", 10));
+  m_usernameEdit->setMaxLength(59);
+  m_usernameEdit->setFrame(false);
+  m_usernameEdit->setAlignment(Qt::AlignCenter);
   m_usernameEdit->setStyleSheet(
       QStringLiteral("QLineEdit#line_edit_username {\n"
                      "    border: none;\n"
                      "    background: none;\n"
                      "    background-color: rgb(255, 255, 255);\n"
                      "}"));
-  m_usernameEdit->setPlaceholderText(QStringLiteral("Username"));
 
   m_passwordEdit = new QLineEdit(this);
   m_passwordEdit->setObjectName(QStringLiteral("line_edit_password"));
   m_passwordEdit->setGeometry(144, 319, 168, 16);
   m_passwordEdit->setFixedSize(169, 17);
+  m_passwordEdit->setFont(makeBoldFont("Microsoft Sans Serif", 10));
+  m_passwordEdit->setMaxLength(59);
+  m_passwordEdit->setAlignment(Qt::AlignCenter);
   m_passwordEdit->setEchoMode(QLineEdit::Password);
   m_passwordEdit->setStyleSheet(
       QStringLiteral("QLineEdit#line_edit_password {\n"
@@ -133,7 +163,6 @@ void LauncherWindow::setupUi() {
                      "    background: none;\n"
                      "    background-color: rgb(255, 255, 255);\n"
                      "}"));
-  m_passwordEdit->setPlaceholderText(QStringLiteral("Password"));
 
   m_reportBugButton = new QPushButton(this);
   m_reportBugButton->setObjectName(QStringLiteral("push_button_report_a_bug"));
@@ -235,9 +264,13 @@ void LauncherWindow::setupUi() {
 
   m_statusLabel = new QLabel(this);
   m_statusLabel->setObjectName(QStringLiteral("label_status"));
-  m_statusLabel->setGeometry(32, 244, 290, 12);
+  m_statusLabel->setGeometry(32, 257, 290, 11);
   m_statusLabel->setMinimumSize(291, 12);
   m_statusLabel->setMaximumSize(291, 12);
+  m_statusLabel->setFont(makeBoldFont("Comic Sans MS", 7));
+  m_statusLabel->setTextFormat(Qt::PlainText);
+  m_statusLabel->setAlignment(Qt::AlignCenter);
+  m_statusLabel->setWordWrap(true);
   m_statusLabel->setStyleSheet(QStringLiteral(
       "QLabel#label_status {\n    border: none;\n    background: none;\n}"));
 
@@ -246,9 +279,12 @@ void LauncherWindow::setupUi() {
   m_gameVersionLabel->setGeometry(610, 580, 174, 19);
   m_gameVersionLabel->setMinimumSize(175, 20);
   m_gameVersionLabel->setMaximumSize(175, 20);
+  m_gameVersionLabel->setFont(makeBoldFont("Comic Sans MS", 8));
+  m_gameVersionLabel->setTextFormat(Qt::PlainText);
+  m_gameVersionLabel->setWordWrap(true);
   m_gameVersionLabel->setStyleSheet(QStringLiteral(
       "QLabel#label_game_version {\n    border: none;\n    background: none;\n}"));
-  m_gameVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  m_gameVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignTop);
 
   m_launcherVersionLabel = new QLabel(this);
   m_launcherVersionLabel->setObjectName(
@@ -256,15 +292,18 @@ void LauncherWindow::setupUi() {
   m_launcherVersionLabel->setGeometry(610, 567, 174, 19);
   m_launcherVersionLabel->setMinimumSize(175, 20);
   m_launcherVersionLabel->setMaximumSize(175, 20);
+  m_launcherVersionLabel->setFont(makeBoldFont("Comic Sans MS", 8));
+  m_launcherVersionLabel->setWordWrap(true);
   m_launcherVersionLabel->setStyleSheet(QStringLiteral(
       "QLabel#label_launcher_version {\n    border: none;\n    background: none;\n}"));
-  m_launcherVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  m_launcherVersionLabel->setAlignment(Qt::AlignRight | Qt::AlignTop);
 
   m_contentPacksButton = new QPushButton(this);
   m_contentPacksButton->setObjectName(
       QStringLiteral("push_button_content_packs"));
   m_contentPacksButton->setGeometry(32, 548, 119, 39);
   m_contentPacksButton->setFixedSize(120, 40);
+  m_contentPacksButton->setEnabled(false);
   m_contentPacksButton->setCursor(Qt::PointingHandCursor);
   m_contentPacksButton->setStyleSheet(QStringLiteral(
       "QPushButton#push_button_content_packs {\n"
@@ -289,6 +328,7 @@ void LauncherWindow::setupUi() {
   m_optionsButton->setObjectName(QStringLiteral("push_button_options"));
   m_optionsButton->setGeometry(444, 548, 119, 39);
   m_optionsButton->setFixedSize(120, 40);
+  m_optionsButton->setEnabled(false);
   m_optionsButton->setCursor(Qt::PointingHandCursor);
   m_optionsButton->setStyleSheet(QStringLiteral(
       "QPushButton#push_button_options {\n"
@@ -310,8 +350,20 @@ void LauncherWindow::setupUi() {
       "}"));
 
   setWindowTitle(QStringLiteral("Toontown Infinite"));
-  m_launcherVersionLabel->setText(QStringLiteral(""));
-  m_gameVersionLabel->setText(QStringLiteral(""));
+  m_statusLabel->setText(QStringLiteral("Login"));
+  m_launcherVersionLabel->setText(QStringLiteral("N/A"));
+  m_gameVersionLabel->setText(QStringLiteral("N/A"));
+}
+
+void LauncherWindow::paintEvent(QPaintEvent *) {
+  // Paint the rounded corners manually.
+  QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  QPainterPath path;
+  path.addRoundedRect(QRectF(rect()), 25, 25);
+  painter.setClipPath(path);
+  painter.drawPixmap(rect(), m_background);
 }
 
 // ---------------------------------------------------------------------------
