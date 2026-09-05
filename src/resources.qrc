@@ -1,0 +1,32 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/JPEG">
+        <file alias="assets/BACKGROUND.jpg">../../assets/images/BACKGROUND.jpg</file>
+        <file alias="assets/CLOSE_DOWN.jpg">../../assets/images/CLOSE_DOWN.jpg</file>
+        <file alias="assets/CLOSE_NORMAL.jpg">../../assets/images/CLOSE_NORMAL.jpg</file>
+        <file alias="assets/CLOSE_ROLLOVER.jpg">../../assets/images/CLOSE_ROLLOVER.jpg</file>
+        <file alias="assets/CONTENT_PACKS_DISABLED.jpg">../../assets/images/CONTENT_PACKS_DISABLED.jpg</file>
+        <file alias="assets/CONTENT_PACKS_DOWN.jpg">../../assets/images/CONTENT_PACKS_DOWN.jpg</file>
+        <file alias="assets/CONTENT_PACKS_NORMAL.jpg">../../assets/images/CONTENT_PACKS_NORMAL.jpg</file>
+        <file alias="assets/CONTENT_PACKS_ROLLOVER.jpg">../../assets/images/CONTENT_PACKS_ROLLOVER.jpg</file>
+        <file alias="assets/HOME_PAGE_DISABLED.jpg">../../assets/images/HOME_PAGE_DISABLED.jpg</file>
+        <file alias="assets/HOME_PAGE_DOWN.jpg">../../assets/images/HOME_PAGE_DOWN.jpg</file>
+        <file alias="assets/HOME_PAGE_NORMAL.jpg">../../assets/images/HOME_PAGE_NORMAL.jpg</file>
+        <file alias="assets/HOME_PAGE_ROLLOVER.jpg">../../assets/images/HOME_PAGE_ROLLOVER.jpg</file>
+        <file alias="assets/MINIMIZE_DOWN.jpg">../../assets/images/MINIMIZE_DOWN.jpg</file>
+        <file alias="assets/MINIMIZE_NORMAL.jpg">../../assets/images/MINIMIZE_NORMAL.jpg</file>
+        <file alias="assets/MINIMIZE_ROLLOVER.jpg">../../assets/images/MINIMIZE_ROLLOVER.jpg</file>
+        <file alias="assets/OPTIONS_DISABLED.jpg">../../assets/images/OPTIONS_DISABLED.jpg</file>
+        <file alias="assets/OPTIONS_DOWN.jpg">../../assets/images/OPTIONS_DOWN.jpg</file>
+        <file alias="assets/OPTIONS_NORMAL.jpg">../../assets/images/OPTIONS_NORMAL.jpg</file>
+        <file alias="assets/OPTIONS_ROLLOVER.jpg">../../assets/images/OPTIONS_ROLLOVER.jpg</file>
+        <file alias="assets/PLAY_DISABLED.jpg">../../assets/images/PLAY_DISABLED.jpg</file>
+        <file alias="assets/PLAY_DOWN.jpg">../../assets/images/PLAY_DOWN.jpg</file>
+        <file alias="assets/PLAY_NORMAL.jpg">../../assets/images/PLAY_NORMAL.jpg</file>
+        <file alias="assets/PLAY_ROLLOVER.jpg">../../assets/images/PLAY_ROLLOVER.jpg</file>
+        <file alias="assets/REPORT_A_BUG_DISABLED.jpg">../../assets/images/REPORT_A_BUG_DISABLED.jpg</file>
+        <file alias="assets/REPORT_A_BUG_DOWN.jpg">../../assets/images/REPORT_A_BUG_DOWN.jpg</file>
+        <file alias="assets/REPORT_A_BUG_NORMAL.jpg">../../assets/images/REPORT_A_BUG_NORMAL.jpg</file>
+        <file alias="assets/REPORT_A_BUG_ROLLOVER.jpg">../../assets/images/REPORT_A_BUG_ROLLOVER.jpg</file>
+    </qresource>
+</RCC>

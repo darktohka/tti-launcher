@@ -1,0 +1,68 @@
+#pragma once
+
+#include "draggablewindow.h"
+
+#include <QMainWindow>
+#include <QUrl>
+
+class QLineEdit;
+class QPushButton;
+class QProgressBar;
+class QLabel;
+class QNetworkAccessManager;
+class Updater;
+
+// Main launcher window. Replicates the "LauncherWindow" class of the original
+// launcher: frameless background, username/password fields, and the
+// close/minimize/home/report-a-bug/play/content-packs/options buttons.
+class LauncherWindow : public DraggableWindow
+{
+    Q_OBJECT
+
+public:
+    explicit LauncherWindow(QWidget *parent = nullptr);
+    ~LauncherWindow() override;
+
+private slots:
+    void on_push_button_close_clicked();
+    void on_push_button_minimize_clicked();
+    void on_push_button_home_page_clicked();
+    void on_push_button_report_a_bug_clicked();
+    void on_push_button_content_packs_clicked();
+    void on_push_button_options_clicked();
+    void on_push_button_play_clicked();
+
+    void updatePlayEnabled();
+    void onManifestFetched(bool ok);
+    void onLoginFinished(const struct LoginResponse &response);
+    void onDownloadError(int error, const QString &errorString);
+    void onDownloadProgress(qint64 bytesRead, qint64 bytesTotal, const QString &status);
+    void onUpdateFinished();
+    void onStatusChanged(const QString &status);
+
+private:
+    void setupUi();
+    void startGame();
+    void setStatus(const QString &status);
+
+    // Child widgets (created in setupUi).
+    QWidget *m_window = nullptr;
+    QPushButton *m_closeButton = nullptr;
+    QPushButton *m_minimizeButton = nullptr;
+    QLineEdit *m_usernameEdit = nullptr;
+    QLineEdit *m_passwordEdit = nullptr;
+    QPushButton *m_reportBugButton = nullptr;
+    QPushButton *m_homePageButton = nullptr;
+    QPushButton *m_playButton = nullptr;
+    QProgressBar *m_progressBar = nullptr;
+    QLabel *m_statusLabel = nullptr;
+    QLabel *m_gameVersionLabel = nullptr;
+    QLabel *m_launcherVersionLabel = nullptr;
+    QPushButton *m_contentPacksButton = nullptr;
+    QPushButton *m_optionsButton = nullptr;
+
+    QNetworkAccessManager *m_nam = nullptr;
+    Updater *m_updater = nullptr;
+
+    QString m_cookie;
+};
