@@ -33,3 +33,8 @@ set_target_properties(tti-launcher PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
+install(TARGETS tti-launcher
+    RUNTIME DESTINATION .
+    BUNDLE DESTINATION .
+)
