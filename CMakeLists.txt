@@ -34,6 +34,19 @@ set_target_properties(tti-launcher PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
+# Embed the launcher icon into the binary.
+if(WIN32)
+    target_sources(tti-launcher PRIVATE src/launcher.rc)
+elseif(APPLE)
+    set_target_properties(tti-launcher PROPERTIES
+        MACOSX_BUNDLE_ICON launcher.icns
+    )
+    set_source_files_properties(assets/icon/launcher.icns PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+    target_sources(tti-launcher PRIVATE assets/icon/launcher.icns)
+endif()
+
 install(TARGETS tti-launcher
     RUNTIME DESTINATION .
     BUNDLE DESTINATION .

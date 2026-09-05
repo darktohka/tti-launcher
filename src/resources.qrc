@@ -29,4 +29,8 @@
         <file alias="assets/REPORT_A_BUG_NORMAL.jpg">../assets/images/REPORT_A_BUG_NORMAL.jpg</file>
         <file alias="assets/REPORT_A_BUG_ROLLOVER.jpg">../assets/images/REPORT_A_BUG_ROLLOVER.jpg</file>
     </qresource>
+    <qresource prefix="/icons">
+        <file alias="launcher.ico">../assets/icon/launcher.ico</file>
+        <file alias="launcher_256.png">../assets/icon/launcher_256.png</file>
+    </qresource>
 </RCC>
