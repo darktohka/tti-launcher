@@ -33,4 +33,8 @@
         <file alias="launcher.ico">../assets/icon/launcher.ico</file>
         <file alias="launcher_256.png">../assets/icon/launcher_256.png</file>
     </qresource>
+    <qresource prefix="/fonts">
+        <file alias="ComicSansMS.ttf">../assets/fonts/ComicSansMS.ttf</file>
+        <file alias="ComicSansMS-Bold.ttf">../assets/fonts/ComicSansMS-Bold.ttf</file>
+    </qresource>
 </RCC>

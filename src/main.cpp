@@ -2,6 +2,7 @@
 #include "launcherconstants.h"
 
 #include <QApplication>
+#include <QFontDatabase>
 #include <QIcon>
 
 int main(int argc, char *argv[])
@@ -9,6 +10,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QApplication::setApplicationName(QStringLiteral("Toontown Infinite"));
     QApplication::setApplicationVersion(launcher::kVersion);
+
+    // Comic Sans MS is not shipped by every platform.
+    QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/ComicSansMS.ttf"));
+    QFontDatabase::addApplicationFont(
+        QStringLiteral(":/fonts/ComicSansMS-Bold.ttf"));
 
     // The PNG provides a fallback on platforms where the ICO decoder is unavailable.
     QIcon appIcon;
